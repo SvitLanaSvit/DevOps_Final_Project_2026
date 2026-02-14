@@ -1,0 +1,11 @@
+# Секрети та ключі
+keys/
+*.csv
+*.pem
+*.key
+*.env
+
+# Локальні файли / IDE
+.vscode/
+.idea/
+*.log
