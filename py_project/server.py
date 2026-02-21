@@ -23,6 +23,24 @@ def detect_ip():
         return "unknown"
     
 class SimpleHandler(BaseHTTPRequestHandler):
+    def do_HEAD(self):
+        if self.path == "/":
+            pod_ip = detect_ip()
+            message = f"OK from pod IP: {pod_ip}\n"
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Length", str(len(message.encode("utf-8"))))
+            self.end_headers()
+        elif self.path == "/favicon.ico":
+            self.send_response(200)
+            self.send_header("Content-Type", "image/svg+xml")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Content-Length", str(len(FAVICON_SVG)))
+            self.end_headers()
+        else:
+            self.send_response(404)
+            self.end_headers()
+
     def do_GET(self):
         if self.path == "/":
             pod_ip = detect_ip()
@@ -35,7 +53,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
         elif self.path == "/favicon.ico":
             self.send_response(200)
             self.send_header("Content-Type", "image/svg+xml")
-            self.send_header("Cache-Control", "public, max-age=86400")
+            self.send_header("Cache-Control", "no-cache")
             self.send_header("Content-Length", str(len(FAVICON_SVG)))
             self.end_headers()
             self.wfile.write(FAVICON_SVG)
