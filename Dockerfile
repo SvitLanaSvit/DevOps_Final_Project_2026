@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY py_project/server.py .
 
+# Оголошує порт 8000 як той, на якому додаток слухає всередині контейнера
 ENV PORT=8000
 EXPOSE 8000
 

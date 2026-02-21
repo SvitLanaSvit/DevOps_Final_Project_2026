@@ -1,4 +1,4 @@
-# This workflow builds a Docker image from the Dockerfile in the repository and pushes it to Docker Hub when changes are pushed to the main branch.
+# Цей файл визначає GitHub Actions workflow для автоматичного створення та публікації Docker-образу на Docker Hub при кожному пуші в гілку main.
 
 name: Build and Push Docker Image
 
