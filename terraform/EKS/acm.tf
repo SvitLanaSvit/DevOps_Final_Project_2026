@@ -1,3 +1,7 @@
+/*
+  Цей файл визначає ресурс AWS Certificate Manager (ACM) для отримання SSL-сертифіката, який буде використовуватися для захисту домену, пов'язаного з кластером EKS. Сертифікат буде валідований через DNS, використовуючи запис у Route 53.
+*/
+
 data "aws_route53_zone" "zone" {
   name         = var.zone_name
   private_zone = false
