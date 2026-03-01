@@ -144,6 +144,17 @@ Address: 18.157.112.164
 
 - ![Перевірка DNS для app.sk.devops10.test-danit.com](../screens/6.6_result_app_k8s_linux.png)
 
+> Примітка про затримку DNS після оновлення Route53
+>
+> Після створення/перезапису запису (`UPSERT` від external-dns) домен може запрацювати не миттєво на всіх DNS-резолверах. У моєму випадку публічні DNS (`8.8.8.8`, `1.1.1.1`) вже повертали A-запис для `app.sk.devops10.test-danit.com`, а локальний резолвер у WSL (`10.255.255.254`) ще деякий час відповідав `No answer` через кеш/затримку оновлення. Після очікування запис підтягнувся і домен запрацював без змін у маніфестах.
+>
+> Для перевірки в таких випадках корисно виконати:
+>
+> ```bash
+> nslookup app.sk.devops10.test-danit.com 8.8.8.8
+> nslookup app.sk.devops10.test-danit.com 1.1.1.1
+> ```
+
 ---
 
 ## 7. Перевірка доступу до застосунку з браузера
@@ -164,7 +175,7 @@ OK from pod IP: 172.31.35.100
 
 Щоб показати, що це саме внутрішній IP pod’а в кластері, я також зробила скріншот команди `kubectl get pods -n app -o wide`, де в колонці **IP** видно ту саму адресу `172.31.35.100` у VPC:
 
-- ![IP pod’а у виводі kubectl get pods -o wide](../screens/6.7_pod_ip_kubectl_get_pods.png)
+- ![IP pod’а у виводі kubectl get pods -o wide](../screens/6.7_result_ip_app_k8s_linux.png)
 
 ---
 

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevOps Final Project Presentation</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row min-vh-100">
+        <aside class="col-12 col-lg-3 border-end sidebar p-3 p-lg-4">
+          <p class="h5 fw-bold mb-1">DevOps Final Project</p>
+          <p class="small text-secondary-emphasis mb-3">Інтерактивна презентація (10–20 хв)</p>
+
+          <div class="slide-list d-flex flex-column gap-2">
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">1. Мета та результат<small class="d-block text-body-secondary">Що реалізовано end-to-end</small></button>
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">2. Архітектура<small class="d-block text-body-secondary">EKS + ArgoCD + DNS + App</small></button>
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">3. Python App<small class="d-block text-body-secondary">Що робить backend</small></button>
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">4. Dockerfile<small class="d-block text-body-secondary">Як формується image</small></button>
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">5. GitHub Actions<small class="d-block text-body-secondary">Build + Push у Docker Hub</small></button>
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">6. Terraform EKS<small class="d-block text-body-secondary">Cluster + Ingress + External DNS</small></button>
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">7. Terraform: ArgoCD (Helm)<small class="d-block text-body-secondary">helm_release + Ingress hostname</small></button>
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">8. K8s Manifests<small class="d-block text-body-secondary">Deployment/Service/Ingress</small></button>
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">9. ArgoCD Application<small class="d-block text-body-secondary">GitOps + Auto Sync</small></button>
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">10. Troubleshooting<small class="d-block text-body-secondary">DNS NXDOMAIN кейс</small></button>
+            <button class="slide-link list-group-item list-group-item-action text-start p-3">11. Demo та висновок<small class="d-block text-body-secondary">Що показати на захисті</small></button>
+          </div>
+        </aside>
+
+        <main class="col-12 col-lg-9 p-3 p-lg-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div class="d-flex gap-2">
+              <button id="prevBtn" class="btn btn-outline-light">← Назад</button>
+              <button id="nextBtn" class="btn btn-outline-light">Вперед →</button>
+            </div>
+            <div id="slideStatus" class="small text-secondary-emphasis"></div>
+          </div>
+
+        <section class="slide active card p-4 border-0">
+          <h1>DevOps Final Project 2026</h1>
+          <p class="text-secondary-emphasis">
+            Автоматизований шлях: код Python backend → Docker Hub image → EKS deployment → ArgoCD GitOps auto-sync.
+          </p>
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <h3>Ціль</h3>
+              <ul>
+                <li>Підняти EKS через Terraform.</li>
+                <li>Доставляти app через Kubernetes маніфести.</li>
+                <li>Керувати деплоєм через ArgoCD.</li>
+                <li>Автооновлення при нових комітах.</li>
+              </ul>
+            </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <h3>Що вже працює</h3>
+              <ul>
+                <li>ArgoCD status: Healthy + Synced.</li>
+                <li>App домен працює через Ingress/NLB.</li>
+                <li>Image tag змінюється на SHA коміту.</li>
+                <li>Підтверджено rollout нового pod.</li>
+              </ul>
+            </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide card p-4 border-0">
+          <h2>Архітектура рішення</h2>
+          <!-- <p class="text-secondary-emphasis">Одна схема, яку варто пояснити першою на захисті.</p> -->
+          <img src="../screens/_Schema.png" alt="Architecture schema" />
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+
+                <h3>Компоненти</h3>
+
+                <details class="term-dd mb-2">
+                    <summary><strong>ACM</strong></summary>
+                  <p class="mb-0 mt-2">AWS Certificate Manager: видає/зберігає TLS-сертифікат для HTTPS доменів (<strong>app.sk...</strong>, <strong>argocd.sk...</strong>).</p>
+                </details>
+
+                <details class="term-dd mb-2">
+                  <summary><strong>external-dns</strong></summary>
+                  <p class="mb-0 mt-2">Kubernetes-контролер, який читає Ingress/Service і автоматично створює DNS-записи в Route53.</p>
+                </details>
+
+                <details class="term-dd mb-2">
+                  <summary><strong>Route53</strong></summary>
+                  <p class="mb-0 mt-2">DNS-сервіс AWS: перетворює домен <strong>app.sk...</strong> у адресу AWS NLB.</p>
+                </details>
+
+                <details class="term-dd mb-2">
+                  <summary><strong>NLB</strong></summary>
+                  <p class="mb-0 mt-2">AWS Network Load Balancer, який приймає зовнішній трафік і передає його до ingress-controller.</p>
+                </details>
+
+                <details class="term-dd mb-2">
+                  <summary><strong>EKS</strong></summary>
+                  <p class="mb-0 mt-2">Керований Kubernetes від AWS: контрольна площина (control plane) від AWS, а worker-ноди — в моєму node group.</p>
+                </details>
+
+                <details class="term-dd mb-2">
+                  <summary><strong>Ingress (nginx)</strong></summary>
+                  <p class="mb-0 mt-2">Точка входу HTTP/HTTPS у кластер: приймає запит і маршрутизує його до Kubernetes Service.</p>
+                </details>
+
+                <details class="term-dd">
+                  <summary><strong>ArgoCD</strong></summary>
+                  <p class="mb-0 mt-2">GitOps-інструмент: порівнює стан у Git з кластером і синхронізує зміни (AUTO-SYNC).</p>
+                </details>
+              </div>
+
+
+            </div>
+
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+                <h3>Що показано на схемі</h3>
+
+                <details class="term-dd mb-2">
+                  <summary><strong>Namespace: argocd</strong> (керування GitOps)</summary>
+                  <ul class="mb-0 mt-2">
+                    <li><strong>Ingress</strong>: <strong>argocd.sk...</strong> (вхідна точка).</li>
+                    <li><strong>Service</strong>: <strong>argocd-server</strong> (ClusterIP).</li>
+                    <li><strong>Pods</strong> (коротко):</li>
+                    <li><strong>argocd-server</strong> — UI + API ArgoCD (керування застосунками, sync, статус).</li>
+                    <li><strong>argocd-repo-server</strong> — бере Git-репо і рендерить маніфести (Helm/Kustomize), віддає їх ArgoCD.</li>
+                    <li><strong>argocd-dex-server</strong> — аутентифікація/SSO (OIDC), інтеграція з Identity Provider.</li>
+                    <li><strong>argocd-redis</strong> — Redis для кешу/швидкої роботи (тимчасові дані, щоб UI/операції були швидші).</li>
+                    <li class="mt-2">
+                      <a
+                        class="screenshot-link"
+                        href="#"
+                        data-bs-toggle="modal"
+                        data-bs-target="#screenshotModal"
+                        data-img="../screens/5.1.1_check_pods_argocd.png"
+                        data-title="ArgoCD pods (kubectl get pods -n argocd)"
+                      >Показати скрін з pod-ами</a>
+                    </li>
+                  </ul>
+                </details>
+
+                <details class="term-dd">
+                  <summary><strong>Namespace: app</strong> (мій backend)</summary>
+                  <ul class="mb-0 mt-2">
+                    <li><strong>Ingress</strong>: <strong>app.sk...</strong> (домен додатку).</li>
+                    <li><strong>Service</strong>: <strong>app</strong> (ClusterIP).</li>
+                    <li><strong>Pods</strong>: застосунок (Deployment → ReplicaSet → Pods).</li>
+                    <li class="mt-2">
+                      <a
+                        class="screenshot-link"
+                        href="#"
+                        data-bs-toggle="modal"
+                        data-bs-target="#screenshotModal"
+                        data-img="../screens/6.6.1_result_app_k8s_pods_linux.png"
+                        data-title="App pods (kubectl get pods -n app -o wide)"
+                      >Показати скрін з pod-ами</a>
+                    </li>
+                  </ul>
+                </details>
+
+                <details class="term-dd mt-2">
+                  <summary><strong>Потік запиту</strong> (app.sk...)</summary>
+                  <ul class="mb-0 mt-2">
+                    <li>Браузер → <strong>Route53</strong> (DNS-resolve).</li>
+                    <li>Route53 → <strong>NLB</strong> (публічна точка входу).</li>
+                    <li>NLB → <strong>nginx Ingress</strong> (маршрутизація по host/path).</li>
+                    <li>Ingress → <strong>Service</strong> → <strong>Pod</strong> (backend).</li>
+                    <li>Pod → відповідь <strong>OK from pod IP</strong>.</li>
+                  </ul>
+                </details>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <section class="slide card p-4 border-0">
+          <h2>Python Backend App</h2>
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <h3>Логіка сервера</h3>
+              <ul>
+                <li>Слухає порт 8000.</li>
+                <li>На <strong>/</strong> повертає HTTP 200.</li>
+                <li>Віддає текст <strong>OK from pod IP</strong>.</li>
+                <li>Дозволяє бачити, що трафік іде в pod.</li>
+              </ul>
+
+              <a
+                class="screenshot-link"
+                href="#"
+                data-bs-toggle="modal"
+                data-bs-target="#screenshotModal"
+                data-img="../screens/8.7_result_change_version_deployment_wsl.png"
+                data-title="Звідки IP: kubectl get pods -n app -o wide"
+              >Показати скрін (kubectl → pod IP)</a>
+            </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <h3>Результат в браузері</h3>
+              <img src="../screens/8.8_result_change_version_deployment_browser_app.png" alt="App response" />
+            </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide card p-4 border-0">
+          <h2>Dockerfile: як будується образ</h2>
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <ul>
+                <li>Базовий образ: <strong>python:3.12-slim</strong>.</li>
+                <li>Копіюється <strong>server.py</strong>.</li>
+                <li><strong>ENV PORT=8000</strong> + <strong>EXPOSE 8000</strong>.</li>
+                <li>Запуск: <strong>python server.py</strong>.</li>
+              </ul>
+
+              <details class="term-dd">
+                <summary><strong>Пояснення ENV / EXPOSE</strong></summary>
+                <ul class="mb-0 mt-2">
+                  <li><strong>ENV PORT=8000</strong> задає змінну середовища <strong>PORT</strong>, яку читає <strong>server.py</strong> (якщо змінна не задана — використовується <strong>8000</strong> за замовчуванням).</li>
+                  <li><strong>EXPOSE 8000</strong> документує, що контейнер слухає порт <strong>8000</strong>. Це <strong>не</strong> відкриває порт назовні, але використовується інструментами (Docker run/compose, Kubernetes).</li>
+                  <li><strong>Підсумок:</strong> <strong>ENV</strong> потрібен додатку (щоб знати порт), <strong>EXPOSE</strong> — підказка/документація, а реальний “вихід назовні” робиться через <code>-p</code> у Docker або через Kubernetes <strong>Service/Ingress</strong>.</li>
+                </ul>
+              </details>
+
+              <div class="mt-2">
+                <a
+                  class="screenshot-link"
+                  href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#screenshotModal"
+                  data-img="../screens/0_dockerfile_code.png"
+                  data-title="Dockerfile (Python backend)"
+                >Відкрити скрін Dockerfile у вікні</a>
+              </div>
+            </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <h3>Навіщо це</h3>
+              <p>
+                Dockerfile описує лише рецепт збірки. Назва image і push у Docker Hub задаються вже у GitHub Actions workflow.
+              </p>
+            </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide card p-4 border-0">
+          <h2>GitHub Actions: Build and Push</h2>
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <ul>
+                <li>Trigger: push у гілку <strong>main</strong>.</li>
+                <li>Логін у Docker Hub через GitHub Secrets.</li>
+                <li>Build context: корінь репозиторію.</li>
+                <li>Push тегів: <strong>latest</strong> та <strong>github.sha</strong>.</li>
+              </ul>
+
+              <details class="term-dd">
+                <summary><strong>Що таке uses: і чому різні @v3/@v4/@v5</strong></summary>
+                <ul class="mb-0 mt-2">
+                  <li><strong>uses:</strong> означає “використай готовий GitHub Action” (чужий або свій) замість того, щоб писати shell-команди вручну.</li>
+                  <li>Формат: <code>owner/repo@ref</code>, наприклад <code>actions/checkout@v4</code> або <code>docker/build-push-action@v5</code>.</li>
+                  <li><strong>@v4/@v5</strong> — це ref (версія), зазвичай <strong>major</strong>-версія конкретного action. У різних action різні актуальні major-версії, тому й бачиш різні числа.</li>
+                  <li>Для максимальної безпеки інколи pinять на конкретний SHA коміту, але для навчального проєкту major-теги ок.</li>
+                </ul>
+              </details>
+
+              <div class="mt-2">
+                <a
+                  class="screenshot-link"
+                  href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#screenshotModal"
+                  data-img="../screens/0.1_dockerimage_code.png"
+                  data-title="GitHub Actions workflow: build + push Docker image"
+                >Відкрити скрін workflow у вікні</a>
+              </div>
+            </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <img src="../screens/3.2_build_new_image_in _dockerhub_after_push_changes_from_github.png" alt="Docker hub build result" />
+            </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide card p-4 border-0">
+          <h2>Terraform: EKS та інфраструктура</h2>
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="d-flex flex-column gap-3">
+                <div class="card slide-card p-3">
+                  <ul class="mb-0">
+                    <li>EKS cluster + 1 node group.</li>
+                    <li>nginx ingress controller.</li>
+                    <li>external-dns для Route53 записів.</li>
+                    <li>ACM (AWS Certificate Manager) TLS сертифікат.</li>
+                    <li>ArgoCD інсталяція в кластер (наступний слайд).</li>
+                  </ul>
+
+                  <details class="term-dd mt-3">
+                    <summary><strong>WSL: 1 node group / 1 node</strong></summary>
+                    <p class="mb-2 mt-2">вивід має містити 1 рядок / 1 назву:</p>
+                    <pre class="mb-2"><code>kubectl get nodes -o wide
+kubectl get nodes -L topology.kubernetes.io/zone,eks.amazonaws.com/nodegroup</code></pre>
+                    <p class="mb-2 mt-0">Щоб зрозуміти, в якій зоні зараз працює app pod: треба співставити <strong>NODE</strong> з <strong>kubectl get pods -n app -o wide</strong> і колонку <strong>ZONE</strong> з команди вище.</p>
+                    <pre class="mb-0"><code>aws eks list-nodegroups --cluster-name &lt;cluster_name&gt;</code></pre>
+                    <div class="mt-2">
+                      <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/5.7.1_created_nodes_node_groups_sk.png" data-title="Nodes, node groups created">Скрін: Nodes, node groups created</a>
+                    </div>
+                  </details>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <img src="../screens/4.1_result_apply_eks.png" alt="Terraform apply result" />
+            </div>
+            </div>
+          </div>
+          <div class="card slide-card p-3 mt-3">
+                  <h3 class="h5 mb-2">Terraform файли (EKS):</h3>
+
+                  <details class="term-dd">
+                    <summary><strong>provider.tf</strong> — провайдери та доступ до API</summary>
+                    <p class="mb-0 mt-2">Цей файл пояснює Terraform, <strong>куди підключатися</strong> і <strong>чим керувати</strong>. Простими словами: він налаштовує доступ до AWS і до Kubernetes-кластера.</p>
+                    <ul class="mb-0 mt-2">
+                      <li><strong>provider aws</strong> — створює AWS ресурси (EKS, IAM, SG, Route53 тощо) у потрібному регіоні та профілі.</li>
+                      <li><strong>provider kubernetes</strong> — працює вже всередині EKS (namespace, service account, інші K8s об’єкти через Kubernetes API).</li>
+                      <li><strong>provider helm</strong> — встановлює Helm чарти в кластер (наприклад ingress-nginx, ArgoCD).</li>
+                      <li>Доступ до EKS API береться з трьох речей: <strong>endpoint</strong> (адреса кластера), <strong>CA certificate</strong> (довіра до кластера) і <strong>token</strong> (авторизація).</li>
+                      <li>Без правильного provider.tf Terraform може створити AWS ресурси, але не зможе керувати Kubernetes/Helm всередині кластера.</li>
+                    </ul>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>variables.tf</strong> — змінні проєкту</summary>
+                    <p class="mb-0 mt-2">Описує вхідні параметри: <strong>name</strong> (кластер/ресурси), <strong>vpc_id</strong>, <strong>subnets_ids</strong>, <strong>tags</strong>, <strong>region</strong>, <strong>iam_profile</strong>, <strong>zone_name</strong>.</p>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>terraform.tfvars</strong> — значення змінних</summary>
+                    <p class="mb-0 mt-2">Конкретні значення для цього середовища: <strong>name = sk</strong>, VPC/subnets, теги, <strong>zone_name = devops10.test-danit.com</strong>, region.</p>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>backend.tf</strong> — де зберігається state</summary>
+                    <p class="mb-0 mt-2">Цей файл налаштовує, де Terraform зберігає <strong>state</strong> (тобто "пам’ять" про вже створені ресурси). У нас state зберігається не локально, а в AWS.</p>
+                    <ul class="mb-0 mt-2">
+                      <li><strong>S3</strong> — місце, де лежить файл state; завдяки цьому команда працює з одним спільним джерелом правди.</li>
+                      <li><strong>DynamoDB lock</strong> — блокування на час <strong>plan/apply</strong>, щоб двоє людей одночасно не змінювали один і той самий state.</li>
+                      <li>Перевага: менше конфліктів, безпечніші деплої і легше відновитися, якщо хтось запускає Terraform з іншого комп’ютера.</li>
+                    </ul>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>sg.tf</strong> — мережевий доступ (Security Groups)</summary>
+                    <p class="mb-0 mt-2">Цей файл задає мережеві правила доступу до EKS. Простими словами: хто може "достукатися" до кластера, а хто ні.</p>
+                    <ul class="mb-0 mt-2">
+                      <li>Створюється Security Group для кластера і правила вхідного/вихідного трафіку.</li>
+                      <li>Доступ до <strong>EKS API (порт 443)</strong> дозволений тільки з нашого поточного зовнішнього IP (визначається через <code>icanhazip</code>).</li>
+                      <li>Це значно безпечніше, ніж відкривати API для всього інтернету (<code>0.0.0.0/0</code>).</li>
+                      <li>Якщо IP зміниться (інший Wi-Fi/VPN), правило треба оновити, інакше <strong>kubectl</strong>/<strong>terraform</strong> не підключаться до API.</li>
+                    </ul>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>iam.tf</strong> — IAM ролі + OIDC для IRSA</summary>
+                    <p class="mb-0 mt-2">Цей файл налаштовує, <strong>хто</strong> і <strong>з якими правами</strong> працює в EKS. Простими словами: без нього кластер або pod-и не матимуть потрібного доступу до AWS сервісів.</p>
+                    <ul class="mb-0 mt-2">
+                      <li>Створюється IAM роль для <strong>EKS cluster</strong> (права для керуючої частини) і окрема IAM роль для <strong>node group</strong> (права для worker-нод).</li>
+                      <li>Підключається <strong>OIDC (OpenID Connect)  provider</strong> — це довіра між EKS і AWS IAM, щоб AWS міг перевіряти "хто саме" запитує доступ.</li>
+                      <li>На базі цього працює <strong>IRSA (IAM Roles for Service Accounts)</strong>: конкретний Kubernetes service account отримує свою IAM роль, тому pod має тільки потрібні права (наприклад, для Route53 в external-dns).</li>
+                      <li>Важливо: так безпечніше, ніж зберігати AWS access keys у контейнері; плюс легше дотримуватися принципу мінімальних прав.</li>
+                    </ul>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>eks-cluster.tf</strong> — створення EKS cluster</summary>
+                    <p class="mb-0 mt-2">Це файл, який створює сам EKS-кластер (керуючу частину Kubernetes в AWS). Простими словами: тут ми "вмикаємо" Kubernetes у нашій VPC і задаємо базові правила його роботи.</p>
+                    <ul class="mb-0 mt-2">
+                      <li>Створюється <strong>aws_eks_cluster</strong> з іменем кластера, IAM-роллю та мережевими параметрами (subnets + security group).</li>
+                      <li>Через <strong>aws_eks_cluster_auth</strong> отримується токен/доступ, щоб Terraform, Helm і kubectl могли підключатися до кластера.</li>
+                      <li>Додається managed add-on <strong>coredns</strong> (зафіксована версія) — це внутрішній DNS Kubernetes, щоб сервіси в кластері знаходили один одного по імені.</li>
+                      <li>Важливо: цей файл створює "мозок" кластера (control plane), а робочі ноди для pod-ів додаються окремо в <strong>eks-worker-nodes.tf</strong>.</li>
+                    </ul>
+                    <div class="mt-2">
+                      <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/5.6_created_cluster_sk.png" data-title="EKS cluster created (sk)">Скрін: створився EKS cluster</a>
+                    </div>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>eks-worker-nodes.tf</strong> — node group (worker nodes)</summary>
+                    <p class="mb-0 mt-2">Цей файл створює <strong>worker nodes</strong> — тобто сервери, на яких реально запускаються Pod-и (додаток, ingress, системні компоненти). Робиться це через ресурс <strong>aws_eks_node_group</strong>, тому AWS сам керує життєвим циклом цих нод.</p>
+                    <ul class="mb-0 mt-2">
+                      <li><strong>scaling 1/1/1</strong> означає: мінімум 1, бажано 1, максимум 1 нода — простий і стабільний формат для навчального/демо середовища.</li>
+                      <li><strong>instance type t3.medium</strong> — базовий збалансований EC2 тип (CPU/RAM), якого достатньо для невеликого кластера та демо-навантаження.</li>
+                      <li>Простими словами: без цього файлу EKS control plane існував би, але запускати Pod-и було б ніде.</li>
+                    </ul>
+                    <div class="mt-2">
+                      <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/5.7_created_nodes_node_groups_sk.png" data-title="EKS node group / nodes created">Скрін: створився node group / nodes</a>
+                    </div>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>acm.tf</strong> — TLS сертифікат (ACM)</summary>
+                    <p class="mb-0 mt-2">Використовується готовий Terraform-модуль <strong>terraform-aws-modules/acm/aws</strong> (v3): він автоматизує випуск ACM-сертифіката для <strong>sk.devops10.test-danit.com</strong> + wildcard <strong>*.sk...</strong>, створює/керує DNS validation записами в Route53 (через <strong>zone_id</strong>), чекає підтвердження (<strong>wait_for_validation = true</strong>) і віддає ARN сертифіката для підключення TLS на Ingress/NLB.</p>
+                    <div class="mt-2">
+                      <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/6.0_created_sertificate_sk.png" data-title="ACM certificate created for sk">Скрін: створився ACM сертифікат</a>
+                    </div>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>ingress_controller.tf</strong> — nginx Ingress Controller</summary>
+                    <p class="mb-0 mt-2">Встановлює <strong>ingress-nginx</strong> через <strong>helm_release</strong> (chart <strong>ingress-nginx</strong>) і налаштовує Service annotations для AWS NLB: тип <strong>nlb</strong>, схема <strong>internet-facing</strong>, TLS-порт <strong>https</strong>, backend protocol <strong>http</strong>. У сертифікатну анотацію <strong>service.beta.kubernetes.io/aws-load-balancer-ssl-cert</strong> підставляємо <strong>module.acm.acm_certificate_arn</strong> — це ARN ACM-сертифіката з <strong>acm.tf</strong>, який NLB використовує для TLS termination.</p>
+                    <div class="mt-2">
+                      <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/5.8_LB_sk.png" data-title="NLB created for ingress">Скрін: створився Load Balancer (NLB)</a>
+                    </div>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>eks-external-dns.tf</strong> — external-dns (Route53)</summary>
+                    <p class="mb-0 mt-2">Цей файл ставить у кластер сервіс <strong>external-dns</strong>. Простими словами: він дивиться на наші Ingress/hostname у Kubernetes і автоматично робить такі самі DNS-записи в <strong>Route53</strong>.</p>
+                    <ul class="mb-0 mt-2">
+                      <li>Використовується готовий модуль <strong>lablabs/eks-external-dns/aws</strong>, щоб не налаштовувати все вручну.</li>
+                      <li>Доступ до Route53 видається без AWS ключів у pod-ах: через <strong>OIDC (OpenID Connect) + IRSA (IAM Roles for Service Accounts)</strong>.</li>
+                      <li>OIDC підтверджує, що це саме pod з нашого EKS, а IRSA "прикріплює" до цього pod-а потрібну IAM роль (тільки з потрібними правами).</li>
+                      <li>Коли з’являється або змінюється Ingress (наприклад, <strong>app.sk...</strong> чи <strong>argocd.sk...</strong>), external-dns сам оновлює DNS запис у Route53.</li>
+                      <li>Перевага: менше ручної роботи і менше помилок — DNS завжди синхронний зі станом кластера.</li>
+                    </ul>
+                    <div class="mt-2">
+                      <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/5.9_Route_53_exist.png" data-title="Route53 records created / exist">Скрін: DNS записи з’явилися в Route53</a>
+                    </div>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>ebs-csi.tf</strong> — storage driver (EBS CSI)</summary>
+                    <p class="mb-0 mt-2">Це драйвер, який з’єднує Kubernetes з дисками AWS EBS (Elastic Block Store). Простими словами: коли pod просить постійне сховище, саме цей компонент створює EBS-диск і підключає його до ноди.</p>
+                    <ul class="mb-0 mt-2">
+                      <li>Потрібен для <strong>PersistentVolume / PersistentVolumeClaim</strong>, тобто коли дані мають зберігатися після перезапуску pod-а.</li>
+                      <li>У EKS найзручніше ставити його як офіційний <strong>EKS add-on</strong> — <strong>aws-ebs-csi-driver</strong>.</li>
+                      <li>Без EBS CSI динамічне створення EBS-томів не працюватиме, і stateful додатки (БД, черги тощо) не зможуть нормально зберігати дані.</li>
+                    </ul>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>argocd.tf</strong> — встановлення ArgoCD</summary>
+                    <p class="mb-0 mt-2">Інсталяція ArgoCD через Helm (показано на наступному слайді).</p>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>.terraform.lock.hcl</strong> — lock версій провайдерів</summary>
+                    <p class="mb-0 mt-2">Автоматично фіксує версії провайдерів, щоб <strong>plan/apply</strong> були повторюваними.</p>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>.terraform/</strong> — кеш провайдерів/модулів</summary>
+                    <p class="mb-0 mt-2">Створюється після <strong>terraform init</strong>: тут лежать завантажені провайдери й модулі. У Git зазвичай не комітиться.</p>
+                  </details>
+
+                  <details class="term-dd mt-2">
+                    <summary><strong>tfplan</strong> — збережений план</summary>
+                    <p class="mb-0 mt-2">Файл, який створюється командою <code>terraform plan -out=tfplan</code>. Далі можна застосувати саме його: <code>terraform apply tfplan</code>.</p>
+                  </details>
+                </div>
+        </section>
+
+        <section class="slide card p-4 border-0">
+          <h2>Terraform: ArgoCD через Helm (argocd.tf)</h2>
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+                <p class="text-secondary-emphasis mb-2">
+                  У <strong>argocd.tf</strong> Terraform встановлює ArgoCD через Helm і далі керує ним автоматично (оновлення та стан зберігаються у Terraform).
+                </p>
+
+                <details class="term-dd">
+                  <summary><strong>Що таке resource "helm_release"</strong></summary>
+                  <ul class="mb-0 mt-2">
+                    <li><strong>helm_release</strong> — це спосіб через Terraform встановити ArgoCD у Kubernetes.</li>
+                    <li>Один <strong>terraform apply</strong> робить усе одразу: піднімає інфраструктуру і ставить ArgoCD з потрібними налаштуваннями.</li>
+                    <li>Усе зберігається в коді, тому це легко повторити в іншому середовищі.</li>
+                  </ul>
+                </details>
+
+                <details class="term-dd mt-2">
+                  <summary><strong>Що саме відбувається в argocd.tf</strong></summary>
+                  <ul class="mb-0 mt-2">
+                    <li>Формується адреса ArgoCD: <strong>argocd.&lt;domain&gt;</strong>.</li>
+                    <li>Ставиться чарт <strong>argo-cd</strong> у namespace <strong>argocd</strong> (якщо namespace ще нема — він створюється).</li>
+                    <li>Вмикається Ingress і вказується, що його обробляє <strong>nginx</strong>.</li>
+                    <li>Прописується hostname, щоб ArgoCD відкривався по потрібному домену.</li>
+                    <li>Параметр <strong>--insecure</strong> означає: в кластері трафік до ArgoCD без TLS, а HTTPS завершується на AWS балансувальнику з ACM сертифікатом.</li>
+                    <li><strong>depends_on</strong> задає порядок: спочатку EKS і nginx ingress, потім ArgoCD.</li>
+                  </ul>
+                </details>
+
+                <p class="mt-3 mb-2"><strong>Ключові налаштування</strong> (скорочено):</p>
+                <pre class="mb-0"><code>resource "helm_release" "argocd" {
+  repository = "https://argoproj.github.io/argo-helm"
+  chart      = "argo-cd"
+  namespace  = "argocd"
+  create_namespace = true
+
+  set { name = "server.ingress.enabled"           value = "true" }
+  set { name = "server.ingress.ingressClassName"  value = "nginx" }
+  set { name = "global.domain"                   value = "argocd.&lt;domain&gt;" }
+  set { name = "server.ingress.hostname"         value = "argocd.&lt;domain&gt;" }
+  set { name = "server.extraArgs[0]"             value = "--insecure" }
+
+  depends_on = [aws_eks_cluster..., aws_eks_node_group..., helm_release.nginx_ingress]
+}</code></pre>
+              </div>
+            </div>
+
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+                <h3>Як перевірити, що ArgoCD працює</h3>
+
+                <details class="term-dd">
+                  <summary><strong>Важливо: перед kubectl командами онови kubeconfig</strong></summary>
+                  <p class="mb-2 mt-2">Щоб <strong>kubectl</strong> підключився до правильного EKS-кластера, спочатку оновлюємо конфіг доступу:</p>
+                  <pre class="mb-0"><code>aws eks update-kubeconfig --name sk --region eu-central-1</code></pre>
+                </details>
+
+                <ul class="mt-3">
+                  <li>Перевірити pod-и в namespace <strong>argocd</strong>.</li>
+                  <li>Відкрити URL <strong>https://argocd.&lt;domain&gt;</strong>.</li>
+                  <li>Отримати initial admin password (secret).</li>
+                </ul>
+
+                <details class="term-dd">
+                  <summary><strong>Команда для паролю (admin)</strong></summary>
+                  <pre class="mb-0 mt-2"><code>kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d; echo</code></pre>
+                </details>
+
+                <div class="mt-3 d-flex flex-column gap-1">
+                  <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/5.1.1_check_pods_argocd.png" data-title="ArgoCD pods (kubectl get pods -n argocd)">Скрін: pod-и ArgoCD</a>
+                  <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/5.4_get_password_argocdsk.png" data-title="Get ArgoCD admin password (secret)">Скрін: як дістати пароль</a>
+                  <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/5.5_result_argo.png" data-title="ArgoCD UI opened in browser">Скрін: ArgoCD UI (працює)</a>
+                  <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/5.3_check_out_dns_argocdsk.png" data-title="DNS record / resolve for argocd hostname">Скрін: DNS для ArgoCD hostname</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide card p-4 border-0">
+          <h2>Kubernetes Manifests (k8s/app)</h2>
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <ul>
+                <li><strong>namespace.yaml</strong>: namespace app.</li>
+                <li><strong>deployment.yaml</strong>: backend image + rollout.</li>
+                <li><strong>service.yaml</strong>: ClusterIP service.</li>
+                <li><strong>ingress.yaml</strong>: app.sk... домен.</li>
+              </ul>
+
+              <details class="term-dd">
+                <summary><strong>Типи Kubernetes Service (коротко)</strong></summary>
+                <ul class="mb-0 mt-2">
+                  <li><strong>ClusterIP</strong> — доступний тільки всередині кластера (стандартний тип). Підходить, коли зовнішній доступ робить <strong>Ingress</strong>.</li>
+                  <li><strong>NodePort</strong> — відкриває порт на кожній ноді: <code>&lt;NodeIP&gt;:&lt;port&gt;</code>. Простий, але не дуже зручний для продакшену.</li>
+                  <li><strong>LoadBalancer</strong> — просить хмару створити зовнішній Load Balancer і видати public endpoint.</li>
+                  <li><strong>ExternalName</strong> — не проксить трафік, а повертає DNS-аліас на зовнішній домен.</li>
+                  <li><strong>Headless</strong> (<code>clusterIP: None</code>) — без віртуального IP; DNS повертає IP pod-ів (часто для StatefulSet).</li>
+                </ul>
+              </details>
+            </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+                <div class="mt-2 d-flex flex-column gap-1">
+                <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/6.1.1_code_namespace_app.png" data-title="k8s/app/namespace.yaml">Відкрити скрін namespace.yaml</a>
+                <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/6.1_create_namespace_app.png" data-title="k8s/app/namespace.yaml">Результат створення namespace для тестування</a>
+                <br />
+                <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/6.2.1_code_deployment_app.png" data-title="k8s/app/deployment.yaml">Відкрити скрін deployment.yaml</a>
+                <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/6.2_create_deployment_app.png" data-title="k8s/app/deployment.yaml">Результат створення deployment для тестування</a>
+                <br />
+                <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/6.3.1_code_service_app.png" data-title="k8s/app/service.yaml (ClusterIP)">Відкрити скрін service.yaml</a>
+                <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/6.3_create_service_app.png" data-title="k8s/app/service.yaml (ClusterIP)">Результат створення service для тестування</a>
+                <br />
+                <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/6.4.1_code_ingress_app.png" data-title="k8s/app/ingress.yaml">Відкрити скрін ingress.yaml</a>
+                <a class="screenshot-link" href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal" data-img="../screens/6.4_create_ingress_app.png" data-title="k8s/app/ingress.yaml">Результат створення ingress для тестування</a>
+              </div>
+            </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide card p-4 border-0">
+          <h2>ArgoCD Application (GitOps)</h2>
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <ul>
+                <li>Application: <strong>app-sk</strong>.</li>
+                <li>Source path: <strong>k8s/app</strong>.</li>
+                <li>Destination namespace: <strong>app</strong>.</li>
+                <li>Auto Sync: увімкнено.</li>
+                <li>Зміна image tag → автосинхронізація.</li>
+              </ul>
+            </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <img src="../screens/8.6_result_change_version_deployment_argo.png" alt="ArgoCD sync" />
+            </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide card p-4 border-0">
+          <h2>Troubleshooting: DNS NXDOMAIN</h2>
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <h3>Що сталося</h3>
+              <ul>
+                <li>external-dns створив запис у Route53.</li>
+                <li>Після UPSERT у Route53 частина DNS-резолверів оновлюється не одразу.</li>
+                <li>8.8.8.8 вже бачив A-record.</li>
+                <li>Локальний DNS (10.255.255.254) тимчасово давав <strong>No answer</strong> / NXDOMAIN.</li>
+              </ul>
+            </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <h3>Як вирішили</h3>
+              <ul>
+                <li>Підтвердили запис через публічні DNS: <strong>8.8.8.8</strong> і <strong>1.1.1.1</strong>.</li>
+                <li>Дочекались оновлення локального DNS-кешу після перезапису Route53.</li>
+                <li><strong>ipconfig /flushdns</strong> на Windows.</li>
+                <li>Перезапуск браузера.</li>
+                <li>Повторна перевірка nslookup і відкриття app.</li>
+              </ul>
+            </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide card p-4 border-0">
+          <h2>Демо і висновок</h2>
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <h3>Що показати в live demo (2–3 хв)</h3>
+              <ul>
+                <li>ArgoCD: app-sk = Healthy/Synced.</li>
+                <li>kubectl get pods -n app -o wide.</li>
+                <li>kubectl describe deployment backend -n app | grep -i image.</li>
+                <li>Відкрити app URL в браузері.</li>
+              </ul>
+            </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card slide-card h-100 p-3">
+              <h3>Ключовий результат</h3>
+              <p>
+                Реалізовано повний GitOps цикл: зміна в Git приводить до автоматичного оновлення застосунку в EKS із перевіряємим результатом.
+              </p>
+            </div>
+            </div>
+          </div>
+        </section>
+        </main>
+      </div>
+    </div>
+
+    <div class="modal fade" id="screenshotModal" tabindex="-1" aria-labelledby="screenshotModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border" style="border-color: var(--bs-border-color) !important">
+          <div class="modal-header" style="border-color: var(--bs-border-color) !important">
+            <h5 class="modal-title" id="screenshotModalLabel">Screenshot</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <img id="screenshotModalImg" class="img-fluid" alt="Screenshot" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,141 @@
+:root {
+  --bs-body-color: #e7ecf7;
+  --bs-secondary-color: #a9b6d3;
+  --bs-secondary-color-rgb: 169, 182, 211;
+  --bs-heading-color: #f3f6ff;
+  --bs-border-color: #2b3a5d;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(180deg, #09101d 0%, #0b1220 100%);
+  color: #e7ecf7;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #f3f6ff;
+}
+
+.sidebar {
+  background: rgba(11, 18, 32, 0.9);
+}
+
+.slide-list {
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+}
+
+.slide-link {
+  background: #131d32;
+  border-color: #2b3a5d;
+  color: #e7ecf7;
+}
+
+.slide-link .text-body-secondary {
+  color: #9fb0d1 !important;
+}
+
+.slide-link.active {
+  border-color: #4f8cff;
+  background: #18284b;
+}
+
+.slide {
+  display: none;
+  background: radial-gradient(circle at top left, #1a2a4d 0%, #101b32 55%, #0f172c 100%);
+  min-height: calc(100vh - 130px);
+}
+
+.slide.active {
+  display: block;
+}
+
+.slide-card {
+  border-color: #2b3a5d;
+  background: rgba(19, 29, 50, 0.8);
+  color: #e7ecf7;
+}
+
+.term-dd {
+  border: 1px solid #2b3a5d;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: rgba(11, 18, 32, 0.55);
+}
+
+.term-dd summary {
+  cursor: pointer;
+  color: #f3f6ff;
+}
+
+.term-dd p {
+  color: #c4d0e8;
+  font-size: 0.95rem;
+}
+
+.term-dd ul {
+  margin-top: 0.5rem;
+  padding-left: 1.15rem;
+}
+
+.text-secondary-emphasis,
+.text-body-secondary,
+#slideStatus {
+  color: #9fb0d1 !important;
+}
+
+pre {
+  padding: 10px 12px;
+  border: 1px solid #2b3a5d;
+  border-radius: 10px;
+  background: rgba(11, 18, 32, 0.55);
+  color: #e7ecf7;
+  overflow-x: auto;
+}
+
+code {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  border: 1px solid #2b3a5d;
+  border-radius: 10px;
+}
+
+.slide img {
+  cursor: zoom-in;
+}
+
+.screenshot-link {
+  color: #9fb0d1;
+  text-decoration: underline;
+}
+
+.screenshot-link:hover {
+  color: #e7ecf7;
+}
+
+#screenshotModal .modal-body {
+  overflow: auto;
+}
+
+#screenshotModalImg {
+  display: block;
+  height: auto;
+}
+
+@media (max-width: 980px) {
+  .sidebar {
+    border-bottom: 1px solid #2b3a5d;
+  }
+
+  .slide-list {
+    max-height: 240px;
+  }
+}
