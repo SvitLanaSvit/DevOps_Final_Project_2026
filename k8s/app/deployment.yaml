@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: svitlanakizilpinar/final-app:63d01371f8abe27c160bf3ecf7012b77543c4a9d
+          image: svitlanakizilpinar/final-app:482aa17970a8856a33e5b602c2fff8a5089cf97d
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
